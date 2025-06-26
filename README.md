@@ -1,61 +1,178 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🚀 Laravel Dockerized Environment
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This repository contains a fully Dockerized setup for running a Laravel application using **PHP-FPM**, **Nginx**, and **Composer**, along with convenient shell scripts to simplify development workflows.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📦 Requirements
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Before you begin, ensure you have the following installed:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+- Bash (for running helper scripts)
+- Optional: SSH key access for private Git repositories (e.g., for Composer dependencies)
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 📁 Project Structure
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```
+project-root/
+├── app/                      # Laravel application
+├── docker-compose.yml        # Docker Compose setup
+├── Dockerfile                # Multi-stage Laravel image build
+├── nginx.conf                # Nginx server configuration
+├── php.ini                   # Custom PHP configuration
+├── run-start.sh              # Script to start containers
+├── run-stop.sh               # Script to stop containers
+├── run-container.sh          # Script to access the app container
+└── README.md
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🧰 Setup & Usage
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 🔑 Step 1: Make Scripts Executable
 
-### Premium Partners
+Run this once to make the helper scripts executable:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+chmod +x run-start.sh run-stop.sh run-container.sh
+```
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 🚀 Step 2: Start the Environment
 
-## Code of Conduct
+To build and start all containers in the background:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+./run-start.sh
+```
 
-## Security Vulnerabilities
+- App will be available at: http://localhost
+- PHP-FPM and Nginx will run in the same container
+- Logs stream to Docker's stdout/stderr
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+### 🛑 Step 3: Stop the Environment
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+To gracefully shut down and remove the containers:
+
+```bash
+./run-stop.sh
+```
+
+---
+
+### 🐚 Step 4: Enter the Container
+
+To open a shell session in the `app` container:
+
+```bash
+./run-container.sh
+```
+
+---
+
+## 🗂 Laravel-Specific Notes
+
+Once inside the container (`./run-container.sh`), typical Laravel commands work as expected:
+
+```bash
+# Install dependencies
+composer install
+
+# Generate application key
+php artisan key:generate
+
+# Run migrations
+php artisan migrate
+
+# Run tests
+php artisan test
+```
+
+Ensure your `.env` file is configured before running `artisan` commands.
+
+---
+
+## 🔐 SSH Access for Private Git
+
+If you're accessing private Git repositories during development or via Composer:
+
+1. Mount your SSH keys into the container (already handled in `docker-compose.yml`):
+
+    ```yaml
+    volumes:
+      - ~/.ssh:/home/laravel/.ssh
+    ```
+
+2. Ensure correct permissions on your **host machine**:
+    ```bash
+    chmod 700 ~/.ssh
+    chmod 600 ~/.ssh/*
+    ```
+
+3. Set `GIT_SSH_COMMAND` to disable host verification if needed:
+    ```yaml
+    environment:
+      - GIT_SSH_COMMAND=ssh -o StrictHostKeyChecking=no
+    ```
+
+---
+
+## ⚙ PHP & Nginx Configuration
+
+- PHP-FPM runs with a custom `php.ini` (`/usr/local/etc/php/php.ini`)
+- Laravel is served from `/var/www/html/public`
+- Nginx configuration is located in `nginx.conf`
+
+To customize:
+- Update `php.ini` for PHP settings
+- Update `nginx.conf` to modify web server behavior
+
+---
+
+## 🧪 Testing in Docker
+
+To run tests inside the container:
+
+```bash
+./run-container.sh
+php artisan test
+```
+
+Or using `docker compose` directly:
+
+```bash
+docker compose exec app php artisan test
+```
+
+---
+
+## ✅ Environment Overview
+
+| Component | Description                     |
+|----------|----------------------------------|
+| PHP      | 8.4 FPM Alpine                   |
+| Web      | Nginx (Alpine)                   |
+| Composer | Installed globally               |
+| User     | `laravel` (UID 1000)             |
+| Workdir  | `/var/www/html`                  |
+| App URL  | http://localhost                 |
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE) — feel free to use, modify, and adapt it to your needs.
+
+---
+
+## 🙋 Support
+
+For questions, issues, or improvements, feel free to open an issue or submit a PR.
