@@ -66,9 +66,6 @@ RUN apk add --no-cache \
 RUN addgroup -g ${GROUP_ID} ${APP_USER} \
     && adduser -D -u ${USER_ID} -G ${APP_USER} ${APP_USER}
 
-RUN mkdir -p /home/laravel/.ssh && \
-    chown -R ${APP_USER}:${APP_USER} /home/laravel/.ssh
-
 # Create Laravel directories and fix permissions
 RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache \
     && mkdir -p /var/log/php /var/log/nginx /run /var/lib/nginx /tmp/laravel/storage/framework/views \
