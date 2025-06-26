@@ -6,4 +6,4 @@ import 'bootstrap/dist/js/bootstrap.bundle.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // app
-import './user-registration.js';
+import './file-upload.js';
